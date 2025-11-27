@@ -1,6 +1,6 @@
 module github.com/opsorch/opsorch-prometheus-adapter
 
-go 1.25.4
+go 1.24.0
 
 replace github.com/opsorch/opsorch-core => ../opsorch-core
 
