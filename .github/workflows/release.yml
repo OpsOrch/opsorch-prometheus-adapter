@@ -28,6 +28,10 @@ jobs:
         image: prom/prometheus:latest
         ports:
           - 9090:9090
+      alertmanager:
+        image: prom/alertmanager:latest
+        ports:
+          - 9093:9093
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,6 +51,9 @@ jobs:
         run: make test
 
       - name: Run integration tests
+        env:
+          PROMETHEUS_URL: http://localhost:9090
+          ALERTMANAGER_URL: http://localhost:9093
         run: make integ
 
   lint:
@@ -167,7 +174,7 @@ jobs:
           go mod edit -dropreplace github.com/opsorch/opsorch-core
           go mod tidy
 
-      - name: Build plugin binary
+      - name: Build plugin binaries
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
@@ -175,12 +182,19 @@ jobs:
         run: |
           mkdir -p bin
           go build -o bin/metricplugin-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/metricplugin
+          go build -o bin/alertplugin-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/alertplugin
 
-      - name: Upload binary artifact
+      - name: Upload metricplugin binary artifact
         uses: actions/upload-artifact@v4
         with:
           name: metricplugin-${{ matrix.goos }}-${{ matrix.goarch }}
           path: bin/metricplugin-${{ matrix.goos }}-${{ matrix.goarch }}
+
+      - name: Upload alertplugin binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: alertplugin-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: bin/alertplugin-${{ matrix.goos }}-${{ matrix.goarch }}
 
   # Create GitHub Release with binary assets
   github-release:
@@ -223,5 +237,9 @@ jobs:
             binaries/metricplugin-linux-arm64/metricplugin-linux-arm64
             binaries/metricplugin-darwin-amd64/metricplugin-darwin-amd64
             binaries/metricplugin-darwin-arm64/metricplugin-darwin-arm64
+            binaries/alertplugin-linux-amd64/alertplugin-linux-amd64
+            binaries/alertplugin-linux-arm64/alertplugin-linux-arm64
+            binaries/alertplugin-darwin-amd64/alertplugin-darwin-amd64
+            binaries/alertplugin-darwin-arm64/alertplugin-darwin-arm64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

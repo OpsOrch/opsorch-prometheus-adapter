@@ -17,6 +17,10 @@ jobs:
         image: prom/prometheus:latest
         ports:
           - 9090:9090
+      alertmanager:
+        image: prom/alertmanager:latest
+        ports:
+          - 9093:9093
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,6 +43,9 @@ jobs:
         run: make plugin
 
       - name: Run integration tests
+        env:
+          PROMETHEUS_URL: http://localhost:9090
+          ALERTMANAGER_URL: http://localhost:9093
         run: make integ
 
   lint:

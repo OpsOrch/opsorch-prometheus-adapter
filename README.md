@@ -1,18 +1,27 @@
 # OpsOrch Prometheus Adapter
 
-This adapter integrates OpsOrch with Prometheus, enabling metric querying and discovery through the `metric.Provider` interface.
+This adapter integrates OpsOrch with Prometheus, enabling metric querying, alert monitoring, and discovery through the `metric.Provider` and `alert.Provider` interfaces.
 
 ## Features
 
+### Metrics
 - **Metric Query**: Execute PromQL queries via structured expressions or raw query strings
 - **Metric Discovery**: List all available metrics in your Prometheus instance
 - **QueryScope Support**: Automatically map service/team/environment to Prometheus labels
 - **Aggregation**: Support for aggregation functions (`sum`, `avg`, `max`, `min`, `count`)
 - **Filtering**: Label-based filtering with multiple operators (`=`, `!=`, `=~`, `!~`)
 
+### Alerts
+- **Alert Query**: Fetch firing and resolved alerts from Prometheus Alertmanager
+- **Alert Details**: Get individual alerts by fingerprint
+- **Status Filtering**: Filter alerts by state (active, suppressed)
+- **Severity Filtering**: Filter alerts by severity level
+
 ## Configuration
 
-The adapter requires the following configuration:
+### Metric Provider
+
+The metric adapter requires the following configuration:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -22,6 +31,21 @@ The adapter requires the following configuration:
 ```json
 {
   "url": "http://localhost:9090"
+}
+```
+
+### Alert Provider
+
+The alert adapter requires the following configuration:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `alertmanagerURL` | string | Yes | The base URL of the Prometheus Alertmanager (e.g., `http://alertmanager:9093`) |
+
+**Example:**
+```json
+{
+  "alertmanagerURL": "http://localhost:9093"
 }
 ```
 
@@ -174,9 +198,23 @@ make test
 ```
 
 **Integration Tests:**
+
+To run integration tests, you need Prometheus and Alertmanager running locally. You can use Docker:
+
 ```bash
+# Start Prometheus
+docker run --rm -d -p 9090:9090 --name prometheus prom/prometheus
+
+# Start Alertmanager
+docker run --rm -d -p 9093:9093 --name alertmanager prom/alertmanager
+
+# Run integration tests
 export PROMETHEUS_URL=http://localhost:9090
+export ALERTMANAGER_URL=http://localhost:9093
 make integ
+
+# Clean up
+docker stop prometheus alertmanager
 ```
 
 Integration tests require a running Prometheus instance and cover:
@@ -197,7 +235,10 @@ opsorch-prometheus-adapter/
 │   └── metricplugin/
 │       └── main.go                  # Plugin entrypoint
 ├── integ/
-│   └── metric.go                    # Integration tests
+│   ├── metric/
+│   │   └── main.go                  # Metric integration tests
+│   └── alert/
+│       └── main.go                  # Alert integration tests
 ├── Makefile                         # Build targets
 └── README.md
 ```
@@ -226,6 +267,8 @@ OpsOrch Core communicates with the plugin over stdin/stdout using JSON-RPC.
 **Supported Methods:**
 - `metric.query`: Execute a metric query
 - `metric.describe`: List available metrics
+- `alert.query`: Query alerts
+- `alert.get`: Get alert details
 
 ## License
 

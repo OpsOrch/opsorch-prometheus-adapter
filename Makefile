@@ -18,11 +18,15 @@ build:
 
 plugin:
 	$(CACHE_ENV) $(GO) build -o bin/metricplugin ./cmd/metricplugin
+	$(CACHE_ENV) $(GO) build -o bin/alertplugin ./cmd/alertplugin
 
 integ-metric:
 	$(CACHE_ENV) $(GO) run ./integ/metric.go
 
-integ: integ-metric
+integ-alert:
+	$(CACHE_ENV) $(GO) run ./integ/alert.go
+
+integ: integ-metric integ-alert
 
 clean:
 	rm -rf $(GOCACHE) bin
