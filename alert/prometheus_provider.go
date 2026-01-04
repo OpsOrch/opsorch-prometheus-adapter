@@ -18,8 +18,8 @@ const ProviderName = "prometheus"
 
 // PrometheusAlertProvider implements alert.Provider for Prometheus Alertmanager.
 type PrometheusAlertProvider struct {
-	alertmanagerURL string
-	client          *http.Client
+	baseURL string
+	client  *http.Client
 }
 
 // NewPrometheusAlertProvider creates a new Prometheus alert provider.
@@ -30,8 +30,8 @@ func NewPrometheusAlertProvider(config map[string]any) (corealert.Provider, erro
 	}
 
 	return &PrometheusAlertProvider{
-		alertmanagerURL: alertmanagerURL,
-		client:          &http.Client{Timeout: 30 * time.Second},
+		baseURL: alertmanagerURL,
+		client:  &http.Client{Timeout: 30 * time.Second},
 	}, nil
 }
 
@@ -68,7 +68,7 @@ func (p *PrometheusAlertProvider) Query(ctx context.Context, query schema.AlertQ
 		params.Add("filter", fmt.Sprintf("env=\"%s\"", query.Scope.Environment))
 	}
 
-	apiURL := fmt.Sprintf("%s/api/v2/alerts?%s", p.alertmanagerURL, params.Encode())
+	apiURL := fmt.Sprintf("%s/api/v2/alerts?%s", p.baseURL, params.Encode())
 
 	req, err := http.NewRequestWithContext(ctx, "GET", apiURL, nil)
 	if err != nil {
@@ -106,7 +106,7 @@ func (p *PrometheusAlertProvider) Query(ctx context.Context, query schema.AlertQ
 
 // Get fetches a single alert by fingerprint from Prometheus Alertmanager.
 func (p *PrometheusAlertProvider) Get(ctx context.Context, id string) (schema.Alert, error) {
-	apiURL := fmt.Sprintf("%s/api/v2/alerts", p.alertmanagerURL)
+	apiURL := fmt.Sprintf("%s/api/v2/alerts", p.baseURL)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", apiURL, nil)
 	if err != nil {
@@ -160,6 +160,7 @@ func convertAlertmanagerAlert(amAlert alertmanagerAlert) schema.Alert {
 		Status:      mapAlertmanagerStateToStatus(amAlert.Status.State),
 		Severity:    amAlert.Labels["severity"],
 		Service:     amAlert.Labels["service"],
+		URL:         "/alerting/alerts#" + amAlert.Fingerprint,
 		Fields: map[string]any{
 			"labels":      amAlert.Labels,
 			"annotations": amAlert.Annotations,

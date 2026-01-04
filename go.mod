@@ -5,7 +5,7 @@ go 1.24.0
 replace github.com/opsorch/opsorch-core => ../opsorch-core
 
 require (
-	github.com/opsorch/opsorch-core v0.0.4
+	github.com/opsorch/opsorch-core v0.4.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/common v0.67.4
 )
