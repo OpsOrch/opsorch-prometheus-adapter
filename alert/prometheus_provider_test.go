@@ -60,8 +60,8 @@ func TestQuery(t *testing.T) {
 	defer server.Close()
 
 	prov := &PrometheusAlertProvider{
-		alertmanagerURL: server.URL,
-		client:          &http.Client{},
+		baseURL: server.URL,
+		client:  &http.Client{},
 	}
 
 	alerts, err := prov.Query(context.Background(), schema.AlertQuery{})
@@ -131,8 +131,8 @@ func TestGet(t *testing.T) {
 	defer server.Close()
 
 	prov := &PrometheusAlertProvider{
-		alertmanagerURL: server.URL,
-		client:          &http.Client{},
+		baseURL: server.URL,
+		client:  &http.Client{},
 	}
 
 	alert, err := prov.Get(context.Background(), "target123")
@@ -160,8 +160,8 @@ func TestGetNotFound(t *testing.T) {
 	defer server.Close()
 
 	prov := &PrometheusAlertProvider{
-		alertmanagerURL: server.URL,
-		client:          &http.Client{},
+		baseURL: server.URL,
+		client:  &http.Client{},
 	}
 
 	_, err := prov.Get(context.Background(), "notfound")

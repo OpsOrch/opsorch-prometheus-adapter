@@ -72,7 +72,7 @@ func main() {
 		log.Printf("  Success: returned %d alerts", len(alerts))
 		for i, a := range alerts {
 			if i < 3 { // Limit output
-				log.Printf("    Alert %d: [%s] %s (%s)", i, a.Status, a.Title, a.ID)
+				log.Printf("    Alert %d: [%s] %s (%s) - URL: %s", i, a.Status, a.Title, a.ID, a.URL)
 			}
 			lastAlertID = a.ID
 		}

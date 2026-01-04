@@ -116,7 +116,7 @@ func main() {
 		log.Printf("  Success: returned %d series", len(series))
 		for i, s := range series {
 			if i < 3 { // Limit output
-				log.Printf("    Series %d: %s %v (Points: %d)", i, s.Name, s.Labels, len(s.Points))
+				log.Printf("    Series %d: %s %v (Points: %d) - URL: %s", i, s.Name, s.Labels, len(s.Points), s.URL)
 			}
 		}
 		if len(series) > 3 {

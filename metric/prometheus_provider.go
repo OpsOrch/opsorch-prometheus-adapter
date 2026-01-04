@@ -13,7 +13,8 @@ import (
 
 // PrometheusProvider implements the metric.Provider interface for Prometheus.
 type PrometheusProvider struct {
-	api v1.API
+	api     v1.API
+	baseURL string
 }
 
 // NewPrometheusProvider creates a new Prometheus provider.
@@ -31,7 +32,8 @@ func NewPrometheusProvider(config map[string]any) (*PrometheusProvider, error) {
 	}
 
 	return &PrometheusProvider{
-		api: v1.NewAPI(client),
+		api:     v1.NewAPI(client),
+		baseURL: url,
 	}, nil
 }
 
@@ -56,7 +58,7 @@ func (p *PrometheusProvider) Query(ctx context.Context, query schema.MetricQuery
 		// Log warnings? For now just proceed.
 	}
 
-	return convertResult(result)
+	return convertResult(result, promQL, p.baseURL)
 }
 
 // Describe lists available metrics from Prometheus.
@@ -140,7 +142,7 @@ func buildPromQL(query schema.MetricQuery) (string, error) {
 	return expr, nil
 }
 
-func convertResult(val model.Value) ([]schema.MetricSeries, error) {
+func convertResult(val model.Value, promQL string, baseURL string) ([]schema.MetricSeries, error) {
 	matrix, ok := val.(model.Matrix)
 	if !ok {
 		return nil, fmt.Errorf("expected matrix result, got %T", val)
@@ -166,6 +168,10 @@ func convertResult(val model.Value) ([]schema.MetricSeries, error) {
 				Value:     float64(p.Value),
 			})
 		}
+
+		// Add URL for deep linking to Prometheus graph
+		s.URL = fmt.Sprintf("%s/graph?g0.expr=%s&g0.range_input=1h", baseURL, promQL)
+
 		series = append(series, s)
 	}
 
